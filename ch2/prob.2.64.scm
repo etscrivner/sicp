@@ -21,9 +21,10 @@
 
 ;;; (A) Partial tree works by constructing a balanced tree through repeated
 ;;; subdivision. It does this by allocating successively smaller halves of the
-;;; given list to the left and right branches respectfully. It thus constructs
+;;; given list to the left and right branches respectively. It thus constructs
 ;;; a balanced tree whose in-order traversal will yield the original list.
 
-;;; (B) If we equate steps to calls to partial tree then the algorithm is
-;;; Theta(n) or more closely Theta(2n) since each element in the tree requires
-;;; two additional calls to partial-tree for the left and right branches.
+;;; (B) If we define a step as a single call to partial tree then the algorithm
+;;; is Theta(n) or more closely Theta(2n) since each element in the tree
+;;; requires two additional calls to partial-tree for the left and right
+;;; branches.
