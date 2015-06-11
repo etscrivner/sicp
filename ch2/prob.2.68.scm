@@ -7,13 +7,14 @@
               (encode (cdr message) tree))))
 
 (define (encode-symbol symbol tree)
-  (define (encoding result current-branch)
-    (cond ((leaf? current-branch)
-           (if (eq? symbol (symbol-leaf current-branch))
-               result
-               (error "bad symbol -- ENCODE-SYMBOL")))
-          ((eq? (car (symbols current-branch)) symbol)
-           (encoding (append result '(0)) (left-branch current-branch)))
-          (else
-           (encoding (append result '(1)) (right-branch current-branch)))))
-  (encoding '() tree))
+  (define (iter-encode-symbol result current-branch)
+    (if (leaf? current-branch)
+        result
+        (let ((lb (left-branch current-branch))
+              (rb (right-branch current-branch)))
+          (if (memq symbol (symbols lb))
+              (iter-encode-symbol (append result '(0)) lb)
+              (iter-encode-symbol (append result '(1)) rb)))))
+  (if (not (memq symbol (symbols tree)))
+      (error "invalid symbol -- ENCODE-SYMBOL")
+      (iter-encode-symbol '() tree)))
