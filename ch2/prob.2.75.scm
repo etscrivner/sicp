@@ -8,4 +8,7 @@
            (error "Unknown op -- MAKE-FROM-MAG-ANG" op))))
   dispatch)
 
-((make-from-mag-ang 5 15) 'imag-part)
+(define (apply-generic op arg)
+  (arg op))
+
+(apply-generic 'imag-part (make-from-mag-ang 5 15))

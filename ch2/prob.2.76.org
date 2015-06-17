@@ -1,0 +1,46 @@
+* Explicit Dispatch
+  Requires that each newly added type be added to every generic operation. It
+  also requires that each new generic operation have explicit conditions and
+  implementions for the new procedure. Need to ensure no name conflicts.
+* Data-Directed Dispatch
+  Requires an installation procedure for each newly added type. Requires the
+  addition of a simple, generic procedure for each newly added operation. Name
+  conflicts are a non-issue.
+* Message Passing
+  Requires a constructor object for each new type. Requires addition of new
+  operation clause to each type.
+* Add new types often
+** *Explicit dispatch*
+*** PRO
+**** Requires no knowledge of packaging system.
+**** All implementation is in terms of easily understood procedures.
+*** CON
+**** Must ensure unique method names.
+**** Requires dispatch clause for each new type added in every generic method.
+** *Data-Directed dispatch*
+*** PRO
+**** No need to ensure unique names.
+**** Lookup table removes lots of if clauses
+*** CON
+**** Requires knowledge of the package system
+**** Less-clear syntax
+** *Message passing*
+*** PRO
+**** No need to ensure unique names
+**** No installation in lookup table
+*** CON
+**** Requires a conditional for each operation
+** CONCLUSION: *Data-directed or Message passing*
+* Add new operations
+** *Explicit dispatch*
+   Requires the creation of the new operation for each type as well as the
+  construction of a generic procedure with a clause for each type. This
+  requires a lot of coordination between the people working on various sections
+  of development.
+** *Data-Directed dispatch*
+   Requires the new procedure be provided by every package and a generic
+  procedure be created to dispatch on that procedure.
+** *Message passing*
+   Each type requires an implementation of the new method. New method ends up
+   in convuluted series of if statements in dispatch.
+** CONCLUSION: *Data-directed*
