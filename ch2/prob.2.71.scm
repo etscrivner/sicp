@@ -21,5 +21,5 @@
 
 ;; In general, constructing a tree from items with frequencies that are
 ;; successive powers of two results in the least frequent symbol requiring
-;; log_2(n) bits where n is the frequency of the most frequency element.
-;; The most frequency symbol, on the other hand, always requires one bit.
+;; log_2(n) bits where n is the frequency of the least frequent element.
+;; The most frequent symbol, on the other hand, always requires one bit.

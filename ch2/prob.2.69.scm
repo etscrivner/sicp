@@ -3,7 +3,6 @@
 (define (generate-huffman-tree pairs)
   (successive-merge (make-leaf-set pairs)))
 
-
 (define (make-tree elem1 elem2)
   (if (leaf? elem1)
       (make-code-tree elem1 elem2)
