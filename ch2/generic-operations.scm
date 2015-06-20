@@ -7,6 +7,9 @@
 (define (mul x y) (apply-generic 'mul x y))
 (define (div x y) (apply-generic 'div x y))
 
+(define (numer r) (apply-generic 'numer r))
+(define (denom r) (apply-generic 'denom r))
+
 (define (make-scheme-number n)
   ((get 'make 'scheme-number) n))
 
@@ -66,6 +69,10 @@
        (lambda (x y) (tag (mul-rat x y))))
   (put 'div '(rational rational)
        (lambda (x y) (tag (div-rat x y))))
+  (put 'numer '(rational)
+       (lambda (r) (numer r)))
+  (put 'denom '(rational)
+       (lambda (r) (denom r)))
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
   'done)
@@ -93,6 +100,14 @@
        (lambda (z1 z2) (tag (mul-complex z1 z2))))
   (put 'div '(complex complex)
        (lambda (z1 z2) (tag (div-complex z1 z2))))
+  (put 'magnitude '(complex)
+       (lambda (z) (magnitude z)))
+  (put 'angle '(complex)
+       (lambda (z) (angle z)))
+  (put 'real-part '(complex)
+       (lambda (z) (real-part z)))
+  (put 'imag-part '(complex)
+       (lambda (z) (imag-part z)))
   (put 'make-from-real-imag 'complex
        (lambda (x y) (tag (make-from-real-imag x y))))
   (put 'make-from-mag-ang 'complex

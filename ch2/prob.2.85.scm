@@ -1,17 +1,29 @@
+(load "prob.2.79.scm")
 (load "prob.2.83.scm")
 
-(define (num-raises-to-top arg)
-  (define (iter num-raises curr-arg)
-    (let ((proc (get 'raise (list (type-tag curr-arg)))))
-      (if proc
-          (iter (+ 1 num-raises) (raise curr-arg))
-          num-raises)))
-  (iter 0 arg))
+(define (has-projection? x)
+  (get 'project (list (type-tag x))))
 
-(define (n-raises arg num-raises)
-  (if (<= num-raises 0)
-      arg
-      (n-raises (raise arg) (- num-raises 1))))
+(define (project x)
+  (let ((proc (get 'project (list (type-tag x)))))
+    (if proc
+        (proc (contents x))
+        (error "No method for type -- PROJECT" x))))
+
+(put 'project '(complex)
+     (lambda (x) (attach-tag 'scheme-real (real-part x))))
+(put 'project '(scheme-real)
+     (lambda (x) (make-rational (inexact->exact (round x)) 1)))
+(put 'project '(rational)
+     (lambda (x) (make-scheme-number (car x))))
+
+(define (can-drop? x)
+  (and (has-projection? x) (equ? (raise (project x)) x)))
+
+(define (drop x)
+  (if (can-drop? x)
+      (drop (project x))
+      x))
 
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
