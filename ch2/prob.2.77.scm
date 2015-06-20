@@ -1,3 +1,4 @@
+(load "generic-operations.scm")
 ;; Firstly, we assume magnitude is defined as follows
 
 (define (magnitude x)
@@ -8,8 +9,10 @@
 ;; result from (type-tag ...) on x is 'complex the lookup in the global table
 ;; fails. Giving the error described.
 
-;; (apply-generic ..) will be called twice - once for the complex object,
-;; returning the generic magnitude method from the rectangular/polar package.
-;; This will then call (apply-generic ...) a second time to resolve down to the
-;; function from either the rectangular or polar package.
+(put 'magnitude 'complex magnitude)
 
+;; (magnitude ..) will be called twice - once for the complex object, where
+;; apply-generic will attempt to recursively apply magnitude to the contents of
+;; the initial value, stripping off the 'complex tag. The recursive call to
+;; magnitude will then use the 'rectangular or 'polar tag remaning to forward
+;; the call on to the appropriate method.
