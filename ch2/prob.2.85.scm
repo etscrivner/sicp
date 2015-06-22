@@ -29,7 +29,10 @@
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
-          (apply proc (map contents args))
+          (let ((result (apply proc (map contents args))))
+            (if (can-drop? result)
+                (drop result)
+                result))
           (if (= (length args) 2)
               (let ((raises-a1 (num-raises-to-top (car args)))
                     (raises-a2 (num-raises-to-top (cadr args)))

@@ -1,0 +1,7 @@
+This would involve modifying the original polar and rectangular packages to use
+the generic add, sub, mul, div operations as well as defining new generic
+operations sine and cosine for each available type.
+
+I've opted out of this because it is a trivial exercise that merely requires
+bulk modifications without providing much additional knowledge of type
+dispatch.
