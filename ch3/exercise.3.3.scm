@@ -13,6 +13,7 @@
     (if (eq? password p)
         (cond ((eq? m 'withdraw) withdraw)
               ((eq? m 'deposit) deposit)
+              ((eq? m 'balance) balance)
               (else (error "Unknown request -- MAKE-ACCOUNT" m)))
         bad-password))
   dispatch)
