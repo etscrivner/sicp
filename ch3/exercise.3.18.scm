@@ -7,5 +7,6 @@
           (else (iter (cdr x) (cons x already-seen)))))
   (iter x '()))
 
+(has-cycle? '())
 (has-cycle? '(a b c))
 (has-cycle? (make-cycle '(a b c)))
