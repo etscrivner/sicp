@@ -1,0 +1,12 @@
+(load "queue.scm")
+
+(define (print-queue queue)
+  (define (iter rest)
+    (if (null? rest)
+        '()
+        (begin (display (car rest))
+               (display " ")
+               (iter (cdr rest)))))
+  (begin (display "#queue( ")
+         (iter (front-ptr queue))
+         (display ")")))
