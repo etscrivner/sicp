@@ -9,6 +9,12 @@
               (insert! x result table)
               result))))))
 
+(define (fib n)
+  (cond ((= n 0) 0)
+        ((= n 1) 1)
+        (else (+ (fib (- n 1))
+                 (fib (- n 2))))))
+
 (define memo-fib
   (memoize
    (lambda (n)
@@ -18,5 +24,7 @@
                     (memo-fib (- n 2))))))))
 
 
-;;; memo-fib is linear because all fib results are only computed once, after
-;;; that they are O(n) lookup in a table.
+;;; This produces an O(n) fibonacci computation because the fibonacci number
+;;; for a given n is only computed once - so there are only O(n) computations.
+;;; This is in stark contrast to the O(2**n) complexity of the original
+;;; recursive fibonacci computation.
