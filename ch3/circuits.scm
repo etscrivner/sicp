@@ -56,6 +56,8 @@
     (and-gate d e s)
     'ok))
 
+;; (+ or-gate-delay inverter-delay (* 2 and-gate-delay))
+
 (define (full-adder a b c-in sum c-out)
   (let ((s (make-wire))
         (c1 (make-wire))
