@@ -1,0 +1,2 @@
+The wires created internally, within half-adder, would not have been added to
+the agenda, and so would require a set-signal! call for that to happen.
