@@ -59,7 +59,7 @@
   (stream-for-each display-line s))
 
 (define (display-line x)
-  (newline x)
+  (newline)
   (display x))
 
 (define (stream-enumerate-interval low high)
