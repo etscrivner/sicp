@@ -11,3 +11,10 @@
     (triples (stream-cdr s) (stream-cdr t) (stream-cdr u)))))
 
 (print-partial-stream (triples integers integers integers) 20)
+
+(define (square x)
+  (* x x))
+
+(define pythagorean-triples
+  (stream-filter (lambda (x) (= (square (caddr x)) (+ (square (car x)) (square (cadr x)))))
+                 (triples integers integers integers)))
