@@ -149,3 +149,33 @@
 (define (accelerated-sequence transform s)
   (stream-map stream-car
               (make-tableau transform s)))
+
+
+(define (interleave s1 s2)
+  (if (stream-null? s1)
+      s2
+      (cons-stream (stream-car s1)
+                   (interleave s2 (stream-cdr s1)))))
+
+(define (pairs s t)
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (interleave
+    (stream-map (lambda (x) (list (stream-car s) x))
+                (stream-cdr t))
+    (pairs (stream-cdr s) (stream-cdr t)))))
+
+(define (print-partial-stream s num-items)
+  (define (iter rest n)
+    (if (= n 0)
+        'done
+        (begin (display-line (stream-car rest))
+               (iter (stream-cdr rest) (- n 1)))))
+  (iter s num-items))
+
+(define (how-many-before s item)
+  (define (iter rest n)
+    (if (eq? (stream-car rest) item)
+        n
+        (iter (stream-cdr rest) (+ n 1))))
+  (iter s 0))
