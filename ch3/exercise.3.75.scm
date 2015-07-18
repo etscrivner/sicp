@@ -1,7 +1,6 @@
-(define (make-zero-crossings input-stream last-value current-sum num-items-so-far)
-  (let ((avpt (/ (+ (stream-car stream) current-sum) num-items-so-far)))
-    (cons-stream (sign-change-detector avpt last-value)
+(define (make-zero-crossings input-stream last-value last-avpt)
+  (let ((avpt (/ (+ (stream-car stream) last-value) 2)))
+    (cons-stream (sign-change-detector avpt last-avpt)
                  (make-zero-crossings (stream-cdr input-stream)
-                                      avpt
-                                      (+ (stream-car input-stream) current-sum)
-                                      (+ 1 num-items-so-far)))))
+                                      (stream-car input-stream)
+                                      avpt))))

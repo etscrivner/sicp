@@ -1,0 +1,10 @@
+(define (smooth stream)
+  (cons-stream (/ (+ (stream-ref stream 0) (stream-ref stream 1)) 2)
+               (smooth (stream-cdr stream))))
+
+(define (make-zero-crossings input-stream)
+  (define (iter avg-pairs-stream)
+    (cons-stream (sign-change-detector (cadr (stream-ref avg-pairs-stream 0))
+                                       (cadr (stream-ref avg-pairs-stream 1)))
+                 (iter (stream-cdr avg-pairs-stream))))
+  (iter (pairs input-stream (smooth input-stream))))
