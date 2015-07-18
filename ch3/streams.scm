@@ -179,3 +179,10 @@
         n
         (iter (stream-cdr rest) (+ n 1))))
   (iter s 0))
+
+(define (integral integrand initial-value dt)
+  (define int
+    (cons-stream initial-value
+                 (add-streams (scale-stream integrand dt)
+                              int)))
+  int)
