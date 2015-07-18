@@ -8,17 +8,19 @@
                (s2car (stream-car s2)))
            (let ((s1weight (weight s1car))
                  (s2weight (weight s2car)))
-             (cond ((< s1weight s2weight)
+             (cond ((<= s1weight s2weight)
                     (cons-stream s1car (merge-weighted (stream-cdr s1) s2 weight)))
-                   ((> s1weight s2weight)
-                    (cons-stream s2car (merge-weighted s1 (stream-cdr s2) weight)))
                    (else
-                    (cons-stream s1car
-                                 (merge-weighted (stream-cdr s1) (stream-cdr s2) weight)))))))))
+                    (cons-stream s2car (merge-weighted s1 (stream-cdr s2) weight)))))))))
 
 (define (pairs-weighted s t weight)
-  (let ((all-pairs (pairs s t)))
-    (merge-weighted all-pairs all-pairs weight)))
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (merge-weighted
+    (stream-map (lambda (x) (list (stream-car s) x))
+                (stream-cdr t))
+    (pairs-weighted (stream-cdr s) (stream-cdr t) weight)
+    weight)))
 
 (define sum-weight
   (pairs-weighted integers integers (lambda (x) (+ (car x) (cadr x)))))
