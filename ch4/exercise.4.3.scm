@@ -1,6 +1,3 @@
-;; To rewrite the interpret in a data-directed style (object-oriented style) is
-;; simply to lean even less on the underlying scheme implementation and to
-;; instead make everything a list. This will be some gnarly work
 (load "interpreter.scm")
 (load "../ch3/table.scm")
 
