@@ -13,7 +13,7 @@
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((assoc (expression-type exp) *evaluation-table*)
-         (let (( (lookup (expression-type exp) *evaluation-table*)))
+         (let ((result (lookup (expression-type exp) *evaluation-table*)))
            (result exp env)))
         ((application? exp)
          (apply (eval (operator exp) env)
