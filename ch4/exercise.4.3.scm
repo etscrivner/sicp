@@ -1,7 +1,7 @@
 (load "interpreter.scm")
 (load "../ch3/table.scm")
 
-(define *evaluation-table* (make-table-object))
+(define *evaluation-table* (make-table))
 
 (define (expression-type exp)
   (car exp))
