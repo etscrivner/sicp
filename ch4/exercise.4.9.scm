@@ -11,9 +11,8 @@
 (load "interpreter.scm")
 
 (define until-test
-  '(until (and (= y 12) (= x 3))
-          (set! x (+ x 1))
-          (set! y (* y x))))
+  '(until (= x 3)
+          (set! x (+ x 1))))
 
 (define (until? exp)
   (tagged-list? exp 'until))
@@ -25,8 +24,8 @@
 
 (define (until->named-let exp)
   (list 'let 'until-loop
-        (list (list 'result (until-predicate exp)))
-        (make-if 'result
+        '()
+        (make-if (until-predicate exp)
                  '(quote done)
-                 (list (until-body exp)
-                       (list 'until-loop)))))
+                 (make-begin (append (until-body exp)
+                                     (list 'until-loop))))))
