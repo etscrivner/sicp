@@ -7,7 +7,7 @@
 ;;   (if result
 ;;     'done
 ;;     (begin <body>
-;;            until-loop)))
+;;            (until-loop))))
 (load "interpreter.scm")
 
 (define until-test
