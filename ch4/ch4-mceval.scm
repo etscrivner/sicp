@@ -1,6 +1,20 @@
-;; Eval/Apply
+;;;;METACIRCULAR EVALUATOR FROM CHAPTER 4 (SECTIONS 4.1.1-4.1.4) of
+;;;; STRUCTURE AND INTERPRETATION OF COMPUTER PROGRAMS
 
+;;;;Matches code in ch4.scm
+
+;;;;This file can be loaded into Scheme as a whole.
+;;;;Then you can initialize and start the evaluator by evaluating
+;;;; the two commented-out lines at the end of the file (setting up the
+;;;; global environment and starting the driver loop).
+
+;;;;**WARNING: Don't load this file twice (or you'll lose the primitives
+;;;;  interface, due to renamings of apply).
+
+;;;from section 4.1.4 -- must precede def of metacircular apply
 (define apply-in-underlying-scheme apply)
+
+;;;SECTION 4.1.1
 
 (define (eval exp env)
   (cond ((self-evaluating? exp) exp)
@@ -13,7 +27,7 @@
          (make-procedure (lambda-parameters exp)
                          (lambda-body exp)
                          env))
-        ((begin? exp)
+        ((begin? exp) 
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
@@ -22,23 +36,20 @@
         (else
          (error "Unknown expression type -- EVAL" exp))))
 
-
 (define (apply procedure arguments)
   (cond ((primitive-procedure? procedure)
          (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
          (eval-sequence
-          (procedure-body procedure)
-          (extend-environment
-           (procedure-parameters procedure)
-           arguments
-           (procedure-environment procedure))))
+           (procedure-body procedure)
+           (extend-environment
+             (procedure-parameters procedure)
+             arguments
+             (procedure-environment procedure))))
         (else
          (error
           "Unknown procedure type -- APPLY" procedure))))
 
-
-;; Evaluation procedures
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -68,15 +79,12 @@
                     env)
   'ok)
 
-
-;; Expressions
+;;;SECTION 4.1.2
 
 (define (self-evaluating? exp)
   (cond ((number? exp) true)
         ((string? exp) true)
         (else false)))
-
-(define (variable? exp) (symbol? exp))
 
 (define (quoted? exp)
   (tagged-list? exp 'quote))
@@ -88,11 +96,15 @@
       (eq? (car exp) tag)
       false))
 
+(define (variable? exp) (symbol? exp))
+
 (define (assignment? exp)
   (tagged-list? exp 'set!))
 
 (define (assignment-variable exp) (cadr exp))
+
 (define (assignment-value exp) (caddr exp))
+
 
 (define (definition? exp)
   (tagged-list? exp 'define))
@@ -108,8 +120,7 @@
       (make-lambda (cdadr exp)
                    (cddr exp))))
 
-(define (lambda? exp)
-  (tagged-list? exp 'lambda))
+(define (lambda? exp) (tagged-list? exp 'lambda))
 
 (define (lambda-parameters exp) (cadr exp))
 (define (lambda-body exp) (cddr exp))
@@ -117,10 +128,13 @@
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
+
 (define (if? exp) (tagged-list? exp 'if))
 
 (define (if-predicate exp) (cadr exp))
+
 (define (if-consequent exp) (caddr exp))
+
 (define (if-alternative exp)
   (if (not (null? (cdddr exp)))
       (cadddr exp)
@@ -129,8 +143,11 @@
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative))
 
+
 (define (begin? exp) (tagged-list? exp 'begin))
+
 (define (begin-actions exp) (cdr exp))
+
 (define (last-exp? seq) (null? (cdr seq)))
 (define (first-exp seq) (car seq))
 (define (rest-exps seq) (cdr seq))
@@ -142,24 +159,33 @@
 
 (define (make-begin seq) (cons 'begin seq))
 
+
 (define (application? exp) (pair? exp))
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
+
 (define (no-operands? ops) (null? ops))
 (define (first-operand ops) (car ops))
 (define (rest-operands ops) (cdr ops))
 
+
 (define (cond? exp) (tagged-list? exp 'cond))
+
 (define (cond-clauses exp) (cdr exp))
+
 (define (cond-else-clause? clause)
   (eq? (cond-predicate clause) 'else))
+
 (define (cond-predicate clause) (car clause))
+
 (define (cond-actions clause) (cdr clause))
+
 (define (cond->if exp)
   (expand-clauses (cond-clauses exp)))
+
 (define (expand-clauses clauses)
   (if (null? clauses)
-      'false
+      'false                          ; no else clause
       (let ((first (car clauses))
             (rest (cdr clauses)))
         (if (cond-else-clause? first)
@@ -171,7 +197,7 @@
                      (sequence->exp (cond-actions first))
                      (expand-clauses rest))))))
 
-;; Predicates
+;;;SECTION 4.1.3
 
 (define (true? x)
   (not (eq? x false)))
@@ -179,20 +205,23 @@
 (define (false? x)
   (eq? x false))
 
+
 (define (make-procedure parameters body env)
   (list 'procedure parameters body env))
 
 (define (compound-procedure? p)
   (tagged-list? p 'procedure))
 
+
 (define (procedure-parameters p) (cadr p))
 (define (procedure-body p) (caddr p))
 (define (procedure-environment p) (cadddr p))
 
-;; Environment
 
 (define (enclosing-environment env) (cdr env))
+
 (define (first-frame env) (car env))
+
 (define the-empty-environment '())
 
 (define (make-frame variables values)
@@ -253,6 +282,76 @@
     (scan (frame-variables frame)
           (frame-values frame))))
 
+;;;SECTION 4.1.4
 
-;;; The driver
+(define (setup-environment)
+  (let ((initial-env
+         (extend-environment (primitive-procedure-names)
+                             (primitive-procedure-objects)
+                             the-empty-environment)))
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
+    initial-env))
 
+;[do later] (define the-global-environment (setup-environment))
+
+(define (primitive-procedure? proc)
+  (tagged-list? proc 'primitive))
+
+(define (primitive-implementation proc) (cadr proc))
+
+(define primitive-procedures
+  (list (list 'car car)
+        (list 'cdr cdr)
+        (list 'cons cons)
+        (list 'null? null?)
+;;      more primitives
+        ))
+
+(define (primitive-procedure-names)
+  (map car
+       primitive-procedures))
+
+(define (primitive-procedure-objects)
+  (map (lambda (proc) (list 'primitive (cadr proc)))
+       primitive-procedures))
+
+;[moved to start of file] (define apply-in-underlying-scheme apply)
+
+(define (apply-primitive-procedure proc args)
+  (apply-in-underlying-scheme
+   (primitive-implementation proc) args))
+
+
+
+(define input-prompt ";;; M-Eval input:")
+(define output-prompt ";;; M-Eval value:")
+
+(define (driver-loop)
+  (prompt-for-input input-prompt)
+  (let ((input (read)))
+    (let ((output (eval input the-global-environment)))
+      (announce-output output-prompt)
+      (user-print output)))
+  (driver-loop))
+
+(define (prompt-for-input string)
+  (newline) (newline) (display string) (newline))
+
+(define (announce-output string)
+  (newline) (display string) (newline))
+
+(define (user-print object)
+  (if (compound-procedure? object)
+      (display (list 'compound-procedure
+                     (procedure-parameters object)
+                     (procedure-body object)
+                     '<procedure-env>))
+      (display object)))
+
+;;;Following are commented out so as not to be evaluated when
+;;; the file is loaded.
+;;(define the-global-environment (setup-environment))
+;;(driver-loop)
+
+'METACIRCULAR-EVALUATOR-LOADED
