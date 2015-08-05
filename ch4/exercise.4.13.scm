@@ -5,6 +5,9 @@
 (define test-env-2 (extend-environment '(a d) '(12 "h") test-env))
 (define test-frame (first-frame test-env-2))
 
+;; Unbind from all environments
+
+;; This is a bit messy, but it creates a pretty looking list
 (define (create-unbound-environment var env)
   (define (env-loop new-env env)
     (define (scan new-frame vars vals)
@@ -28,5 +31,18 @@
     (set-car! env (car result))
     (set-cdr! env (cdr result))))
 
-;; I opt to remove the binding from all frames as this is, I think, the least
-;; surprising result of calling such a method.
+;; Unbind only from enclosing environment
+
+(define (make-unbound! var env)
+  (if (eq? env the-empty-environment)
+      (error "Empty environment given -- MAKE-UNBOUND!")
+      (let ((frame (first-frame env)))
+        (define (scan vars vals)
+          (cond ((null? vars)
+                 (error "Unbound variable -- MAKE-UNBOUND!" var))
+                ((eq? var (car vars))
+                 (set-car! vars '())
+                 (set-car! vals '()))
+                (else (scan (cdr vars) (cdr vals)))))
+        (scan (frame-variables frame)
+              (frame-values frame)))))
