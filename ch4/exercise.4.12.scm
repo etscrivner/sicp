@@ -1,46 +1,45 @@
 ;; These can still be remolded to be a little bit nicer
-(define (find-variable-binding var vars vals)
-  (cond ((null? vars)
-         '())
-        ((eq? var (car vars))
-         (list vars vals))
-        (else (find-variable-binding var (cdr vars) (cdr vals)))))
 
-(define (apply-to-binding f var frame)
-  (let ((result (find-variable-binding var
-                                       (frame-variables frame)
-                                       (frame-values frame))))
-    (if (null? result)
-        '()
-        (apply-in-underlying-scheme f result))))
+(define (frame-find-variable var found-action not-found-action frame)
+  (define (iter vars vals)
+    (cond ((or (null? vars) (null? vals))
+           (not-found-action frame))
+          ((eq? var (car vars))
+           (found-action vars vals))
+          (else (iter (cdr vars) (cdr vals)))))
+  (iter (frame-variables frame) (frame-values frame)))
 
-(define (map-frames f env)
-  (if (eq? env the-empty-environment)
-      '()
-      (cons (f (first-frame env))
-            (map-frames f (enclosing-environment env)))))
+(define (environment-traverse f error-action env)
+  (cond ((eq? env the-empty-environment)
+         (error-action))
+        (else
+         (let ((result (f (first-frame env))))
+           (if result
+               result
+               (environment-traverse f error-action (enclosing-environment env)))))))
 
 (define (lookup-variable-value var env)
-  (define (extract-binding frame)
-    (apply-to-binding (lambda (vars vals) (car vals)) var frame))
-  (let ((result (map-frames extract-binding env)))
-    (if (null? (car result))
-        (error "Unbound variable" var)
-        (car result))))
-
+  (environment-traverse
+   (lambda (frame)
+     (frame-find-variable var (lambda (vars vals) (car vals)) (lambda (x) false) frame))
+   (lambda () (error "Unbound variable" var))
+   env))
 
 (define (set-variable-value! var val env)
-  (define (update-binding frame)
-    (apply-to-binding (lambda (vars vals) (set-car! vals val) 'ok)
-                      var frame))
-  (let ((result (map-frames update-binding env)))
-    (if (null? (car result))
-        (error "Unbound variable" var))))
+  (environment-traverse
+   (lambda (frame)
+     (frame-find-variable
+      var (lambda (vars vals) (set-car! vals val)) (lambda (x) false) frame))
+   (lambda () (error "Unbound variable" var))
+   env))
 
 (define (define-variable var val env)
-  (define (update-binding frame)
-    (apply-to-binding (lambda (vars vals) (set-car! vals val) 'ok)
-                      var frame))
-  (let ((result (map-frames update-binding env)))
-    (if (null? (car result))
-        (add-binding-to-frame! var val (first-frame env)))))
+  (environment-traverse
+   (lambda (frame)
+     (frame-find-variable
+      var
+      (lambda (vars vals) (set-car! vals val))
+      (lambda (x) (add-binding-to-frame! var val x) false)
+      frame))
+   (lambda () 'done)
+   env))
