@@ -18,6 +18,9 @@
                result
                (environment-traverse f error-action (enclosing-environment env)))))))
 
+;; Note, for not-found-action, returning false continues enclosing environment
+;; iteration. Returning true halts enclosing environment iteration.
+
 (define (lookup-variable-value var env)
   (environment-traverse
    (lambda (frame)
@@ -39,7 +42,7 @@
      (frame-find-variable
       var
       (lambda (vars vals) (set-car! vals val))
-      (lambda (x) (add-binding-to-frame! var val x) false)
+      (lambda (x) (add-binding-to-frame! var val x) true)
       frame))
    (lambda () 'done)
    env))
