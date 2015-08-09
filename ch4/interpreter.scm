@@ -16,6 +16,7 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((let? exp) (eval (let->combination exp) env))
         ((application? exp)
          (apply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -171,6 +172,25 @@
                      (sequence->exp (cond-actions first))
                      (expand-clauses rest))))))
 
+(define (let? exp)
+  (tagged-list? exp 'let))
+(define (make-let vars vals body)
+  (append (list 'let (map list vars vals)) body))
+(define (let-definitions exp)
+  (cadr exp))
+(define (let-definitions-variables defs)
+  (map car defs))
+(define (let-definitions-values defs)
+  (map cadr defs))
+(define (let-body exp)
+  (cddr exp))
+(define (let->combination exp)
+  (let ((defs (let-definitions exp)))
+    (append (list (make-lambda (let-definitions-variables defs)
+                               (let-body exp)))
+            (let-definitions-values defs))))
+
+
 ;; Predicates
 
 (define (true? x)
@@ -265,7 +285,11 @@
   (list (list 'car car)
         (list 'cdr cdr)
         (list 'cons cons)
-        (list 'null? null?)))
+        (list 'null? null?)
+        (list '+ +)
+        (list '- -)
+        (list '* *)
+        (list '/ /)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
