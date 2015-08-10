@@ -24,9 +24,11 @@
         (let ((variable-names (map definition-variable defines))
               (variable-values (map definition-value defines)))
           (list (make-let variable-names
-                          (make-list (length variable-names) '(quote *unassigned*))
+                          (make-list (length variable-names)
+                                     '(quote *unassigned*))
                           (append
-                           (map (lambda (x y) (list 'set! x y)) variable-names variable-values)
+                           (map (lambda (x y) (list 'set! x y))
+                                variable-names variable-values)
                            rest-of-body)))))))
 
 ;; make-procedure is better as this allows for a procedure to be evaluated many
@@ -36,4 +38,5 @@
 
 ;; Testing
 (define test-proc '(lambda (r) (let ((pi 3.141)) (* 2 pi r))))
-(define better-test-proc '(lambda (r) (define pi (+ 1 m)) (define m (* 2 pi)) (* m pi r)))
+(define better-test-proc
+  '(lambda (r) (define pi (+ 1 m)) (define m (* 2 pi)) (* m pi r)))
