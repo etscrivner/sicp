@@ -1,4 +1,5 @@
 ;; Eval/Apply
+(load "exercise.4.20.scm")
 
 (define apply-in-underlying-scheme apply)
 
@@ -17,6 +18,7 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((let? exp) (eval (let->combination exp) env))
+        ((letrec? exp) (eval (letrec->let exp) env))
         ((application? exp)
          (apply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -289,7 +291,8 @@
         (list '+ +)
         (list '- -)
         (list '* *)
-        (list '/ /)))
+        (list '/ /)
+        (list '= =)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
