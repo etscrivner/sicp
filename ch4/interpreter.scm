@@ -292,7 +292,10 @@
         (list '- -)
         (list '* *)
         (list '/ /)
-        (list '= =)))
+        (list '= =)
+        (list 'list list)
+        (list 'display display)
+        (list 'newline newline)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
