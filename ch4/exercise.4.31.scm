@@ -1,7 +1,6 @@
 (load "interpreter.scm")
 
-(define (actual-value exp env)
-  (force-it (eval exp env)))
+;; Eval/Apply
 
 (define (eval exp env)
   (cond ((self-evaluating? exp) exp)
@@ -35,25 +34,15 @@
          (eval-sequence
           (procedure-body procedure)
           (extend-environment
-           (procedure-parameters procedure)
-           (list-of-delayed-args arguments env)
+           (procedure-parameter-names procedure)
+           (list-of-thunked-arguments
+            (procedure-parameters procedure) arguments env)
            (procedure-environment procedure))))
         (else
          (error
           "Unknown procedure type -- APPLY" procedure))))
 
-(define (list-of-arg-values exps env)
-  (if (no-operands? exps)
-      '()
-      (cons (actual-value (first-operand exps) env)
-            (list-of-arg-values (rest-operands exps) env))))
-
-(define (list-of-delayed-args exps env)
-  (if (no-operands? exps)
-      '()
-      (cons (delay-it (first-operand exps) env)
-            (list-of-delayed-args (rest-operands exps) env))))
-
+;; Evaluation
 
 (define (eval-if exp env)
   (if (true? (actual-value (if-predicate exp) env))
@@ -65,28 +54,27 @@
 
 (define (thunk? obj)
   (tagged-list? obj 'thunk))
+(define (thunk-memo? obj)
+  (tagged-list? obj 'thunk-memo))
+(define (evaluated-thunk? obj)
+  (tagged-list? obj 'evaluated-thunk))
+
 (define (thunk-exp thunk)
   (cadr thunk))
 (define (thunk-env thunk)
   (caddr thunk))
-
-(define (evaluated-thunk? obj)
-  (tagged-list? obj 'evaluated-thunk))
 (define (thunk-value evaluated-thunk)
   (cadr evaluated-thunk))
 
 (define (delay-it exp env)
   (list 'thunk exp env))
+(define (delay-it-memo exp env)
+  (list 'thunk-memo exp env))
 
-;; Unmemoized
-(define (force-it obj)
-  (if (thunk? obj)
-      (actual-value (thunk-exp obj) (thunk-env obj))
-      obj))
-
-;; Memoized
 (define (force-it obj)
   (cond ((thunk? obj)
+         (actual-value (thunk-exp obj) (thunk-env obj)))
+        ((thunk-memo? obj)
          (let ((result (actual-value (thunk-exp obj) (thunk-env obj))))
            (set-car! obj 'evaluated-thunk)
            (set-car! (cdr obj) result)
@@ -96,9 +84,55 @@
          (thunk-value obj))
         (else obj)))
 
+(define (actual-value exp env)
+  (force-it (eval exp env)))
+
+;; List of arguments
+
+(define (lazy-param? param)
+  (and (pair? param) (eq? 'lazy (cadr param))))
+(define (lazy-memo-param? param)
+  (and (pair? param) (eq? 'lazy-memo (cadr param))))
+
+(define (list-of-thunked-arguments params exps env)
+  (if (no-operands? exps)
+      '()
+      (let ((curr-param (car params))
+            (curr-operand (first-operand exps)))
+        (cond ((lazy-param? curr-param)
+               (cons (delay-it curr-operand env)
+                     (list-of-thunked-arguments
+                      (cdr params) (rest-operands exps) env)))
+              ((lazy-memo-param? curr-param)
+               (cons (delay-it-memo curr-operand env)
+                     (list-of-thunked-arguments
+                      (cdr params) (rest-operands exps) env)))
+              (else (cons (actual-value curr-operand the-global-environment)
+                          (list-of-thunked-arguments
+                           (cdr params) (rest-operands exps) env)))))))
+
+(define (list-of-arg-values exps env)
+  (if (no-operands? exps)
+      '()
+      (cons (actual-value (first-operand exps) env)
+            (list-of-arg-values (rest-operands exps) env))))
+
+;; Miscellaneous
+
+(define (extract-param-name param)
+  (if (or (lazy-memo-param? param) (lazy-param? param))
+      (car param)
+      param))
+
+(define (procedure-parameters p)
+  (cadr p))
+(define (procedure-parameter-names p)
+  (map extract-param-name (cadr p)))
+
 ;; Driver loop
-(define input-prompt ";;; L-Eval input:")
-(define output-prompt ";;; L-Eval value:")
+
+(define input-prompt ";;; LM-Eval input:")
+(define output-prompt ";;; LM-Eval value:")
 
 (define (driver-loop)
   (prompt-for-input input-prompt)
