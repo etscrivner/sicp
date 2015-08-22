@@ -115,7 +115,7 @@
   (if (no-operands? exps)
       '()
       (cons (actual-value (first-operand exps) env)
-            (list-of-arg-values (rest-operands exps) env))))
+            (list-of-arg-values (erst-operands exps) env))))
 
 ;; Miscellaneous
 

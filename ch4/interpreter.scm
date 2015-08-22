@@ -7,6 +7,8 @@
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
+        ((and? exp) (eval-and (cdr exp) env))
+        ((or? exp) (eval-or (cdr exp) env))
         ((assignment? exp) (eval-assignment exp env))
         ((definition? exp) (eval-definition exp env))
         ((if? exp) (eval-if exp env))
@@ -71,6 +73,20 @@
                     env)
   'ok)
 
+(define (eval-and clauses env)
+  (cond ((last-exp? clauses) (eval (first-exp clauses) env))
+        (else (let ((eval-result (eval (first-exp clauses) env)))
+                (if (true? eval-result)
+                    (eval-and (rest-exps clauses) env)
+                    eval-result)))))
+
+(define (eval-or clauses env)
+  (cond ((last-exp? clauses) (eval (first-exp clauses) env))
+        (else (let ((eval-result (eval (first-exp clauses) env)))
+                (if (true? eval-result)
+                    eval-result
+                    (eval-or (rest-exps clauses) env))))))
+
 
 ;; Expressions
 
@@ -78,6 +94,11 @@
   (cond ((number? exp) true)
         ((string? exp) true)
         (else false)))
+
+(define (and? exp)
+  (tagged-list? exp 'and))
+(define (or? exp)
+  (tagged-list? exp 'or))
 
 (define (variable? exp) (symbol? exp))
 
@@ -288,11 +309,23 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'list list)
+        (list 'memq memq)
+        (list 'member member)
+        (list 'not not)
         (list '+ +)
         (list '- -)
         (list '* *)
         (list '/ /)
         (list '= =)
+        (list '< <)
+        (list '> >)
+        (list '<= <=)
+        (list '>= >=)
+        (list 'abs abs)
+        (list 'remainder remainder)
+        (list 'integer? integer?)
+        (list 'sqrt sqrt)
         (list 'list list)
         (list 'display display)
         (list 'newline newline)))

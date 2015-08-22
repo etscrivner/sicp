@@ -351,7 +351,7 @@
 
 ;;;Following are commented out so as not to be evaluated when
 ;;; the file is loaded.
-;;(define the-global-environment (setup-environment))
+(define the-global-environment (setup-environment))
 ;;(driver-loop)
 
 'METACIRCULAR-EVALUATOR-LOADED
