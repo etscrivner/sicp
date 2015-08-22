@@ -309,6 +309,7 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'eq? eq?)
         (list 'list list)
         (list 'memq memq)
         (list 'member member)
